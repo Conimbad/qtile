@@ -75,8 +75,11 @@ keys = [
         desc="Toggle between split and unsplit sides of stack"),
     Key([mod], "Return", lazy.spawn("alacritty"), desc="Launch terminal"),
     Key([mod], "f", lazy.spawn("firefox"), desc="Launch firefox"),
-    Key([mod], "o", lazy.spawn("rofi -show run"), desc="Launch rofi menu"),
+    Key([mod], "o", lazy.spawn("rofi -show run"), desc="Launch rofi menu-run"),
+    Key([mod], "i", lazy.spawn("rofi -show filebrowser"), desc="Launch rofi menu-filebrowser"),
     Key([mod], "t", lazy.spawn("thunar"), desc="Launch thunar"),
+    Key([mod], "p", lazy.spawn("pavucontrol"),
+        desc="Launch pulseaudio control panel"),
 
     # Toggle between different layouts as defined below
     Key([mod], "Tab", lazy.next_layout(), desc="Toggle between layouts"),
@@ -86,15 +89,24 @@ keys = [
     Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
     Key([mod], "r", lazy.spawncmd(),
         desc="Spawn a command using a prompt widget"),
+    Key([mod],"a", lazy.widget["keyboardlayout"].next_keyboard(),
+        desc="Next keyboard layout"),
 ]
 
+# Modify WindowName 
+"""
+def win_name(text):
+    for string in [" - Chromium"," - Mozilla Firefox"]:
+        text=text.replace(string,"This is a text")
+    return text
+"""
 # Autostart
 @hook.subscribe.startup_once
 def autostart ():
     home = os.path.expanduser('~')
     subprocess.Popen([home + '/.config/qtile/autostart.sh'])
 
-groups = [Group(i) for i in ["","", "","","",""]]
+groups = [Group(i) for i in ["  ","  ", "  ","  ","  ","  ","  ","  "]]
 
 for i, group in enumerate(groups):
     desktop_num = str(i+1)
@@ -135,8 +147,8 @@ layouts = [
 ]
 
 widget_defaults = dict(
-    font='SF-Pro-Display-Regular',
-    fontsize=14,
+    font='Hack Nerd Font',
+    fontsize=12,
     padding=4,
 )
 extension_defaults = widget_defaults.copy()
@@ -151,31 +163,39 @@ screens = [
                     highlight_method = 'block',
                     this_current_screen_border = '689d6a',
                     padding_y = 7,
+                    padding_x = 10,
                 ), #Groups of desktops
                 widget.Spacer(length = 20),
                 widget.Prompt(),
-                widget.WindowName(fontsize = 18, format='{name}', foreground="fbf1c7"),
+                widget.WindowName(
+                    fontsize = 18, 
+                    foreground="fbf1c7", 
+                    #parse_text=win_name,
+                ),
                 widget.Chord(
                     chords_colors={
                         'launch': ("#ff0000", "#ffffff"),
                     },
                     name_transform=lambda name: name.upper(),
                 ),
-                widget.TextBox("", fontsize = 40, foreground = "458588", padding = 0,),
+                widget.TextBox("", fontsize = 40, foreground = "458588", padding = -5,),
                 widget.CheckUpdates(
-                    custom_command="checkupdates",
-                    background="458588",
+                    execute=' '.join(['alacritty', '-e', 'paru']),
+                    distro='Arch_paru',
+                    display_format="Updates  :{updates}",
+                    update_interval=900,
+                    no_update_string='裏 0',
+                    font = "Hack Nerd Font",
+                    background="#458588",
                     color_no_updates="#fbf1c7",
                     color_have_updates="#fbf1c7",
-                    no_update_string='裏 0',
-                    display_format="Updates :{updates}",
-                    update_interval=1800,
                     fontsize=18,
-                    distro='Arch',
                 ),
-                widget.Systray(),
-                widget.Clock(format='%Y-%m-%d %a %I:%M %p', fontsize = 18, background = "#98971a"),
-                widget.QuickExit(background = "#fb4934", fontsize = 18),
+                widget.Systray(background = "#fb4934", icon_size = 18, padding=5),
+                widget.KeyboardLayout(configured_keyboards = ['us','latam'], display_map={'us':'us','latam':'la'}, background = "#fb4934", font = "Hack Nerd Font", fontsize = 18),
+                #widget.KeyboardKbdd(),
+                widget.Clock(format='%d-%m-%Y %a %I:%M %p', fontsize = 18, background = "#98971a"),
+                #widget.QuickExit(background = "#fb4934", fontsize = 18),
             ],
             24,
             background = "#1d2021",
